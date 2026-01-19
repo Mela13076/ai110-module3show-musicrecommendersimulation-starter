@@ -27,7 +27,13 @@ Some prompts to answer:
 - How does your `Recommender` compute a score for each song
 - How do you choose which songs to recommend
 
-You can include a simple diagram or bullet list if helpful.
+- Real-world recommendation systems analyze user behavior and content attributes to predict what a user will enjoy next. In this project, it simulates a content-based recommendation approach by building a user profile from preferred song features and comparing it against available songs. The system prioritizes numerical audio features such as energy, tempo, and mood-related attributes, rewarding songs that are closer to the user’s preferences rather than simply higher or lower values. Genre and mood are used as secondary signals to improve relevance while keeping recommendations explainable and simple.
+
+- Overveiw on Algorithm recipe: 
+  - A song earns points for matching the user’s genre and mood and additional similarity points based on how close its energy, tempo, valence, danceability, and acousticness are to the user’s target preferences. Numeric features are scored by closeness using 1 - abs(song_value - target_value) (after normalizing tempo). Songs are ranked by total score and the highest-scoring songs are recommended.
+
+- Potential Biases:
+  - Because this recommender prioritizes genre and numeric similarity, it may over-recommend songs from the user’s preferred genre and under-recommend tracks from other genres that still match the user’s mood or energy level. The system also relies on predefined feature weights, which can limit discovery and reinforce existing listening patterns instead of encouraging exploration.
 
 ---
 
@@ -96,13 +102,9 @@ Read and complete `model_card.md`:
 
 [**Model Card**](model_card.md)
 
-Write 1 to 2 paragraphs here about what you learned:
-
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
-
-
----
+I learned how small design choices strongly affect recommendation outcomes.
+It was interesting to see how numeric features can represent subjective taste.
+This project made me more aware of how music apps shape what users discover.
 
 ## 7. `model_card_template.md`
 
