@@ -9,12 +9,15 @@ You will implement the functions in recommender.py:
 - recommend_songs
 """
 
-from recommender import load_songs, recommend_songs
+from recommender import STRATEGIES, load_songs, recommend_songs
 
 
 def main() -> None:
     songs = load_songs("data/songs.csv") 
     print(f"Loaded songs: {len(songs)}")
+
+    mode = "mood_first" # Change to "genre_first", "mood_first", or "balanced" to test other strategies
+    strategy = STRATEGIES.get(mode, STRATEGIES["balanced"])
 
     test_profiles = []
 
@@ -94,7 +97,7 @@ def main() -> None:
     for profile in test_profiles:
         profile["tempo_min"] = tempo_min
         profile["tempo_max"] = tempo_max
-        recommendations = recommend_songs(profile, songs, k=5)
+        recommendations = recommend_songs(profile, songs, k=5, strategy=strategy)
         
 
         print("\nTop recommendations:\n")

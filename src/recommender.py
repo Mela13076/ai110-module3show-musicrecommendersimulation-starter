@@ -36,7 +36,53 @@ def _closeness(song_value: float, target_value: float, weight: float) -> float:
     return weight * (1.0 - abs(song_value - target_value))
 
 
-def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
+DEFAULT_STRATEGY = {
+    "name": "balanced",
+    "genre_bonus": 2.0,
+    "mood_bonus": 1.0,
+    "w_energy": 1.2,
+    "w_tempo": 1.0,
+    "w_valence": 1.0,
+    "w_dance": 0.9,
+    "w_acoustic": 0.9,
+}
+
+STRATEGIES = {
+    "balanced": DEFAULT_STRATEGY,
+    "genre_first": {
+        "name": "genre_first",
+        "genre_bonus": 3.0,
+        "mood_bonus": 0.5,
+        "w_energy": 0.9,
+        "w_tempo": 0.8,
+        "w_valence": 0.8,
+        "w_dance": 0.8,
+        "w_acoustic": 0.8,
+    },
+    "mood_first": {
+        "name": "mood_first",
+        "genre_bonus": 1.0,
+        "mood_bonus": 2.5,
+        "w_energy": 0.9,
+        "w_tempo": 0.9,
+        "w_valence": 1.0,
+        "w_dance": 0.9,
+        "w_acoustic": 0.9,
+    },
+    "energy_focused": {
+        "name": "energy_focused",
+        "genre_bonus": 0.5,
+        "mood_bonus": 0.5,
+        "w_energy": 2.0,
+        "w_tempo": 1.2,
+        "w_valence": 0.7,
+        "w_dance": 0.8,
+        "w_acoustic": 0.7,
+    },
+}
+
+
+def score_song(user_prefs: Dict, song: Dict, strategy: Dict = DEFAULT_STRATEGY) -> Tuple[float, List[str]]:
     """
     Scores a single song against a user's preferences.
     Returns:
@@ -55,19 +101,19 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
 
     # --- Categorical bonuses ---
     if song["genre"] == user_prefs["favorite_genre"]:
-        score += 2.0
-        reasons.append("genre match (+2.0)")
+        score += strategy["genre_bonus"]
+        reasons.append(f"genre match (+{strategy['genre_bonus']:.1f})")
 
     if song["mood"] == user_prefs["favorite_mood"]:
-        score += 1.0
-        reasons.append("mood match (+1.0)")
+        score += strategy["mood_bonus"]
+        reasons.append(f"mood match (+{strategy['mood_bonus']:.1f})")
 
     # --- Numeric similarity weights ---
-    W_ENERGY = 1.2
-    W_TEMPO = 1.0
-    W_VALENCE = 1.0
-    W_DANCE = 0.9
-    W_ACOUSTIC = 0.9
+    W_ENERGY = strategy["w_energy"]
+    W_TEMPO = strategy["w_tempo"]
+    W_VALENCE = strategy["w_valence"]
+    W_DANCE = strategy["w_dance"]
+    W_ACOUSTIC = strategy["w_acoustic"]
 
     # Features already in [0, 1]
     energy_pts = _closeness(song["energy"], user_prefs["target_energy"], W_ENERGY)
@@ -101,7 +147,7 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     return score, reasons
 
 
-def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int) -> List[Dict]:
+def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int, strategy: Dict = DEFAULT_STRATEGY) -> List[Dict]:
     """
     Scores all songs and returns the top K as a list of dicts.
     Each returned item includes:
@@ -112,7 +158,7 @@ def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int) -> List[Dict]:
     scored: List[Dict] = []
 
     for song in songs:
-        s, reasons = score_song(user_prefs, song)
+        s, reasons = score_song(user_prefs, song, strategy=strategy)
         scored.append({
             **song,
             "score": s,
